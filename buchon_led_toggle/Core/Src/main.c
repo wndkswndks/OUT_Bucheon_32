@@ -52,6 +52,7 @@ LED_T m_green;
 LED_T m_blue;
 LED_T m_white;
 
+uint8_t bw_step = 0;
 
 
 
@@ -73,7 +74,7 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)///
+int main(void)///qw
 {
   /* USER CODE BEGIN 1 */
   TIME_T time = {0,};
@@ -291,7 +292,7 @@ float Check_temperture()
 	
 	adc_value = Read_ADC();
 
-	if(adc_value==0) return 0;
+	if(adc_value==0) return temp;
 	
  	Vin = (adc_value / 4095.0) * 5.0;
  	R1 = Vin/(5.0 - Vin) * 10000.0; 
@@ -319,9 +320,8 @@ float Check_temperture()
 
 void Green_config()
 {
-	static uint8_t step = STEP1;
 	uint32_t temper = 0;
-	switch(step)
+	switch(m_green.sub_step)
 	{
 		case STEP1:
 			Led_toggle_config2(&m_green, GREEN_ON_TIME, GREEN_OFF_TIME, LED_GREEN_Pin);
@@ -332,7 +332,7 @@ void Green_config()
 			{
 				memset(&m_green,0,sizeof(LED_T));
 				GREEN_ON;
-				step = STEP2; 
+				m_green.sub_step = STEP2; 
 			}
 		break;
 		case STEP2:
@@ -341,7 +341,7 @@ void Green_config()
 			if(temper < TEMP_TH) 
 			{
 				GREEN_OFF;
-				step = STEP1; 
+				m_green.sub_step = STEP1; 
 			}
 		break;
 
@@ -352,16 +352,15 @@ void Green_config()
 
 void Blue_White_config()
 {
-	static uint8_t step = STEP1;
 	
-	switch(step)
+	switch(bw_step)
 	{
 		case STEP1:
 			if(Check_button() == ON)
 			{
 				memset(&m_blue,0,sizeof(LED_T));
 				BLUE_OFF;
-				step = STEP2; 
+				bw_step = STEP2; 
 			}
 			Led_toggle_config2(&m_blue, BLUE_ON_TIME, BLUE_OFF_TIME, LED_BLUE_Pin);	
 			
@@ -371,10 +370,9 @@ void Blue_White_config()
 			{
 				memset(&m_white,0,sizeof(LED_T));
 				WHITE_OFF;
-				step = STEP1; 
-			}
-			
-		Led_toggle_config2(&m_white, WHITE_ON_TIME, WHITE_OFF_TIME, LED_WHITE_Pin); 			
+				bw_step = STEP1; 
+			}	
+			Led_toggle_config2(&m_white, WHITE_ON_TIME, WHITE_OFF_TIME, LED_WHITE_Pin); 			
 		break;
 
 		
@@ -405,6 +403,7 @@ uint8_t Init_All_Led()
 	memset(&m_blue,0,sizeof(LED_T));
 	memset(&m_green,0,sizeof(LED_T));
 	memset(&m_white,0,sizeof(LED_T));
+	bw_step = 0;
 
 	RED_OFF;	GREEN_OFF;	BLUE_OFF;	WHITE_OFF;
 }

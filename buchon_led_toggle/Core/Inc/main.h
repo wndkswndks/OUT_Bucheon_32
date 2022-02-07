@@ -70,6 +70,7 @@ typedef struct
 	uint32_t past_time_small;
 	uint8_t on_flag;
 	STEP_E step;
+	STEP_E sub_step;
 	TIME_T dest_time;
 } LED_T;
 
