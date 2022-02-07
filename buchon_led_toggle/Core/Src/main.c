@@ -116,7 +116,6 @@ int main(void)///qw
  	{
 		case STEP1:
 			RED_ON;
-			//m_red.past_time = Get_Now_RTC_time();
 
 			Read_RTC_TR(&time);
 			time_to_sec(time,RED_ON_TIME, &m_red.dest_time);
@@ -127,11 +126,9 @@ int main(void)///qw
 			Green_config(); 	
 			Blue_White_config();
 	
-		    //if(Get_Now_RTC_time() >= m_red.past_time + RED_ON_TIME)
 		    if(Get_time(&m_red))
 	 		{ 			
 				Init_All_Led();
-				//m_red.past_time = Get_Now_RTC_time();
 				Read_RTC_TR(&time);
 				time_to_sec(time,RED_OFF_TIME, &m_red.dest_time);
 				m_red.step = STEP3;
@@ -139,7 +136,6 @@ int main(void)///qw
 		break;
 
 		case STEP3:
-			//if(Get_Now_RTC_time() >= m_red.past_time + RED_OFF_TIME)
 			if(Get_time(&m_red))
 	 		{
 				m_red.step = STEP1;
