@@ -74,7 +74,7 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)///qw
+int main(void)///qw444
 {
   /* USER CODE BEGIN 1 */
   TIME_T time = {0,};
@@ -102,6 +102,12 @@ int main(void)///qw
   MX_ADC_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  RTC_TimeTypeDef time_set;
+
+  time_set.Hours = 1;
+  time_set.Minutes = 59;
+  time_set.Seconds = 50;
+  HAL_RTC_SetTime(&hrtc,&time_set,RTC_FORMAT_BIN);
 
   /* USER CODE END 2 */
 
@@ -112,40 +118,40 @@ int main(void)///qw
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    switch(m_red.step)
- 	{
-		case STEP1:
-			RED_ON;
-			//m_red.past_time = Get_Now_RTC_time();
-
-			Read_RTC_TR(&time);
-			time_to_sec(time,RED_ON_TIME, &m_red.dest_time);
-			m_red.step = STEP2;
-		break;
-
-		case STEP2:
-			Green_config(); 	
-			Blue_White_config();
-	
-		    //if(Get_Now_RTC_time() >= m_red.past_time + RED_ON_TIME)
-		    if(Get_time(&m_red))
-	 		{ 			
-				Init_All_Led();
-				//m_red.past_time = Get_Now_RTC_time();
-				Read_RTC_TR(&time);
-				time_to_sec(time,RED_OFF_TIME, &m_red.dest_time);
-				m_red.step = STEP3;
-	 		}	
-		break;
-
-		case STEP3:
-			//if(Get_Now_RTC_time() >= m_red.past_time + RED_OFF_TIME)
-			if(Get_time(&m_red))
-	 		{
-				m_red.step = STEP1;
-	 		}	
-		break;	
- 	}
+//    switch(m_red.step)
+// 	{
+//		case STEP1:
+//			RED_ON;
+//			//m_red.past_time = Get_Now_RTC_time();
+//
+//			Read_RTC_TR(&time);
+//			time_to_sec(time,RED_ON_TIME, &m_red.dest_time);
+//			m_red.step = STEP2;
+//		break;
+//
+//		case STEP2:
+//			Green_config(); 	
+//			Blue_White_config();
+//	
+//		    //if(Get_Now_RTC_time() >= m_red.past_time + RED_ON_TIME)
+//		    if(Get_time(&m_red))
+//	 		{ 			
+//				Init_All_Led();
+//				//m_red.past_time = Get_Now_RTC_time();
+//				Read_RTC_TR(&time);
+//				time_to_sec(time,RED_OFF_TIME, &m_red.dest_time);
+//				m_red.step = STEP3;
+//	 		}	
+//		break;
+//
+//		case STEP3:
+//			//if(Get_Now_RTC_time() >= m_red.past_time + RED_OFF_TIME)
+//			if(Get_time(&m_red))
+//	 		{
+//				m_red.step = STEP1;
+//	 		}	
+//		break;	
+// 	}
   }
   /* USER CODE END 3 */
 }
