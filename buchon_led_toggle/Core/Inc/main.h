@@ -70,7 +70,6 @@ typedef struct
 	uint32_t past_time_small;
 	uint8_t on_flag;
 	STEP_E step;
-	STEP_E sub_step;
 	TIME_T dest_time;
 } LED_T;
 
@@ -85,15 +84,36 @@ typedef struct
 #define WHITE_ON_TIME   600
 #define WHITE_OFF_TIME  3000
 
+//#define RED_ON_TIME     100
+//#define RED_OFF_TIME    100
+//#define GREEN_ON_TIME   30
+//#define GREEN_OFF_TIME  30
+//#define BLUE_ON_TIME    4
+//#define BLUE_OFF_TIME   4
+//#define WHITE_ON_TIME   5
+//#define WHITE_OFF_TIME  5
+
+
+
+//#define RED_ON_TIME     20*1000
+//#define RED_OFF_TIME    5*1000
+//#define GREEN_ON_TIME   1*1000
+//#define GREEN_OFF_TIME  1*1000
+//#define BLUE_ON_TIME    2*1000
+//#define BLUE_OFF_TIME  	2*1000
+//#define WHITE_ON_TIME   2*1000
+//#define WHITE_OFF_TIME  2*1000
+
 
 //#define RED_ON_TIME     20
 //#define RED_OFF_TIME    5
 //#define GREEN_ON_TIME   1
 //#define GREEN_OFF_TIME  1
-//#define BLUE_ON_TIME    5
-//#define BLUE_OFF_TIME  	5
-//#define WHITE_ON_TIME   5
-//#define WHITE_OFF_TIME  5
+//#define BLUE_ON_TIME    2
+//#define BLUE_OFF_TIME  	2
+//#define WHITE_ON_TIME   2
+//#define WHITE_OFF_TIME  2
+
 
 
 #define TEMP_TH         33.0 // 기�? ?��?��
@@ -144,12 +164,11 @@ uint8_t Check_button();
 uint8_t Init_All_Led();
 uint32_t Get_Now_RTC_time();
 
-void time_to_sec(TIME_T time, uint32_t wait_time,TIME_T *dest);
+void time_to_sec(RTC_TimeTypeDef* time, uint32_t wait_time,TIME_T *dest);
+
 void time_to_sec_config();
 
-uint8_t Get_time(LED_T *led);
-
-void Read_RTC_TR(TIME_T* time);
+uint8_t Get_time(TIME_T dest, LED_T *led);
 
 /* USER CODE END Private defines */
 

@@ -52,11 +52,9 @@ LED_T m_green;
 LED_T m_blue;
 LED_T m_white;
 
-uint8_t bw_step = 0;
-
-
-
 extern RTC_HandleTypeDef hrtc;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,6 +65,10 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint32_t tr = 0;
+uint32_t tr_cnt = 0;
+uint8_t g_step = STEP1;
+uint8_t b_w_step = STEP1; 
 
 /* USER CODE END 0 */
 
@@ -74,10 +76,9 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)///qw
+int main(void)
 {
   /* USER CODE BEGIN 1 */
-  TIME_T time = {0,};
 
   /* USER CODE END 1 */
 
@@ -102,6 +103,8 @@ int main(void)///qw
   MX_ADC_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(100);
+  HAL_RTCEx_SetSmoothCalib(&hrtc,0,0,0x036); //40
 
   /* USER CODE END 2 */
 
@@ -112,13 +115,18 @@ int main(void)///qw
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    if(RTC->TR != tr)
+	{
+		tr = RTC->TR;
+		tr_cnt ++;
+		
+	}
     switch(m_red.step)
  	{
 		case STEP1:
 			RED_ON;
-
-			Read_RTC_TR(&time);
-			time_to_sec(time,RED_ON_TIME, &m_red.dest_time);
+			m_red.past_time = Get_Now_RTC_time();
 			m_red.step = STEP2;
 		break;
 
@@ -126,22 +134,23 @@ int main(void)///qw
 			Green_config(); 	
 			Blue_White_config();
 	
-		    if(Get_time(&m_red))
+		    if(Get_Now_RTC_time() >= m_red.past_time + RED_ON_TIME)
 	 		{ 			
 				Init_All_Led();
-				Read_RTC_TR(&time);
-				time_to_sec(time,RED_OFF_TIME, &m_red.dest_time);
+				m_red.past_time = Get_Now_RTC_time();
 				m_red.step = STEP3;
 	 		}	
 		break;
 
 		case STEP3:
-			if(Get_time(&m_red))
+			if(Get_Now_RTC_time() >= m_red.past_time + RED_OFF_TIME)
 	 		{
 				m_red.step = STEP1;
 	 		}	
 		break;	
  	}
+
+
   }
   /* USER CODE END 3 */
 }
@@ -163,16 +172,15 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSI14
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI14|RCC_OSCILLATORTYPE_HSE
                               |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSI14State = RCC_HSI14_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSI14CalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL3;
   RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -241,20 +249,22 @@ void Led_toggle_config(LED_T *led,uint32_t on_time, uint32_t off_time,uint16_t p
 
 void Led_toggle_config2(LED_T *led,uint32_t on_time, uint32_t off_time,uint16_t pin)
 {
-	TIME_T time = {0,};
+	//TIME_T dest_time = {0,};
+	RTC_TimeTypeDef RTC_times={0,};
+	
 	switch(led->step)
 	{
 		case STEP1:
 			HAL_GPIO_WritePin(LED_PORT, pin, GPIO_PIN_SET); 
 			led->step = STEP2;
 			
-			Read_RTC_TR(&time);
-			time_to_sec(time,on_time, &led->dest_time);
+			HAL_RTC_GetTime(&hrtc, &RTC_times,RTC_FORMAT_BIN);
+			time_to_sec(&RTC_times,on_time, &led->dest_time);
 
 		break;
 
 		case STEP2:
-			if(Get_time(led))
+			if(Get_time(led->dest_time, led))
 	 		{
 				led->step = STEP3;
 	 		}
@@ -264,12 +274,12 @@ void Led_toggle_config2(LED_T *led,uint32_t on_time, uint32_t off_time,uint16_t 
 			HAL_GPIO_WritePin(LED_PORT, pin, GPIO_PIN_RESET); 
 			led->step = STEP4;
 			
-			Read_RTC_TR(&time);
-			time_to_sec(time,off_time,&led->dest_time);
+			HAL_RTC_GetTime(&hrtc, &RTC_times,RTC_FORMAT_BIN);
+			time_to_sec(&RTC_times,off_time,&led->dest_time);
 		break;
 
 		case STEP4:
-			if(Get_time(led))
+			if(Get_time(led->dest_time, led))
 	 		{
 				led->step = STEP1;
 	 		}
@@ -317,10 +327,10 @@ float Check_temperture()
 void Green_config()
 {
 	uint32_t temper = 0;
-	switch(m_green.sub_step)
+	switch(g_step)
 	{
 		case STEP1:
-			Led_toggle_config2(&m_green, GREEN_ON_TIME, GREEN_OFF_TIME, LED_GREEN_Pin);
+			Led_toggle_config(&m_green, GREEN_ON_TIME, GREEN_OFF_TIME, LED_GREEN_Pin);
 			
 			
 			temper = Check_temperture();			
@@ -328,7 +338,7 @@ void Green_config()
 			{
 				memset(&m_green,0,sizeof(LED_T));
 				GREEN_ON;
-				m_green.sub_step = STEP2; 
+				g_step = STEP2; 
 			}
 		break;
 		case STEP2:
@@ -337,7 +347,7 @@ void Green_config()
 			if(temper < TEMP_TH) 
 			{
 				GREEN_OFF;
-				m_green.sub_step = STEP1; 
+				g_step = STEP1; 
 			}
 		break;
 
@@ -349,16 +359,16 @@ void Green_config()
 void Blue_White_config()
 {
 	
-	switch(bw_step)
+	switch(b_w_step)
 	{
 		case STEP1:
 			if(Check_button() == ON)
 			{
 				memset(&m_blue,0,sizeof(LED_T));
 				BLUE_OFF;
-				bw_step = STEP2; 
+				b_w_step = STEP2; 
 			}
-			Led_toggle_config2(&m_blue, BLUE_ON_TIME, BLUE_OFF_TIME, LED_BLUE_Pin);	
+			Led_toggle_config(&m_blue, BLUE_ON_TIME, BLUE_OFF_TIME, LED_BLUE_Pin);	
 			
 		break;
 		case STEP2:
@@ -366,9 +376,10 @@ void Blue_White_config()
 			{
 				memset(&m_white,0,sizeof(LED_T));
 				WHITE_OFF;
-				bw_step = STEP1; 
-			}	
-			Led_toggle_config2(&m_white, WHITE_ON_TIME, WHITE_OFF_TIME, LED_WHITE_Pin); 			
+				b_w_step = STEP1; 
+			}
+			
+		Led_toggle_config(&m_white, WHITE_ON_TIME, WHITE_OFF_TIME, LED_WHITE_Pin); 			
 		break;
 
 		
@@ -399,48 +410,45 @@ uint8_t Init_All_Led()
 	memset(&m_blue,0,sizeof(LED_T));
 	memset(&m_green,0,sizeof(LED_T));
 	memset(&m_white,0,sizeof(LED_T));
-	bw_step = 0;
 
 	RED_OFF;	GREEN_OFF;	BLUE_OFF;	WHITE_OFF;
+	g_step = STEP1;
+	b_w_step = STEP1; 
 }
 
 uint32_t Get_Now_RTC_time()
 {
 	uint32_t time = 0;
 
-	time = HAL_GetTick();
+	//time = HAL_GetTick();
+	time = tr_cnt;
 
 	return time;
 	//return (RTC->CNTH<< 16 | RTC->CNTL);
 }
 RTC_TimeTypeDef times;
 
-uint8_t Get_time(LED_T *led)
+uint8_t Get_time(TIME_T dest, LED_T *led)
 {
-	TIME_T time = {0,};
+	RTC_TimeTypeDef time;
 
-	Read_RTC_TR(&time);
 
-	if(led->dest_time.hour <= time.hour && led->dest_time.min <= time.min && led->dest_time.sec <= time.sec )
+	if(HAL_GetTick() > led->past_time_small +10)
 	{
-		return SET;
+		HAL_RTC_GetTime(&hrtc, &time,RTC_FORMAT_BIN);
+
+		if(dest.hour == time.Hours && dest.min == time.Minutes && dest.sec == time.Seconds )
+		{
+			return SET;
+		}
+		led->past_time_small = HAL_GetTick();
 	}
+
 	return RESET;
 }
 
-void Read_RTC_TR(TIME_T* time)
-{
-	volatile uint32_t tr = 0;
-
-	tr = RTC->TR;
-
-	time->sec = ((tr>>4) & 0x07)*10 + (tr&0x0f);//((tr>>4) & 0x07)*10 + tr&0x0f;
-	time->min = ((tr>>12) & 0x07)*10 + ((tr>>8)&0x0f);
-	time->hour = ((tr>>20) & 0x07)*10 + ((tr>>16)&0x0f);
-}
-
 uint32_t now_sec = 0;
-void time_to_sec(TIME_T time, uint32_t wait_time,TIME_T *dest)
+void time_to_sec(RTC_TimeTypeDef* time, uint32_t wait_time,TIME_T *dest)
 {
 
 	TIME_T add;
@@ -449,9 +457,9 @@ void time_to_sec(TIME_T time, uint32_t wait_time,TIME_T *dest)
 	add.min = (wait_time%3600)/60;
 	add.sec = wait_time%60;
 	
-	dest->hour = time.hour + add.hour;
-	dest->min = time.min +add.min;
-	dest->sec = time.sec + add.sec;
+	dest->hour = time->Hours + add.hour;
+	dest->min = time->Minutes +add.min;
+	dest->sec = time->Seconds + add.sec;
 
 	if(dest->sec >= 60)
 	{
@@ -477,7 +485,7 @@ void time_to_sec_config()
 	
 	HAL_RTC_GetTime(&hrtc, &times,RTC_FORMAT_BIN);
 	HAL_Delay(10);
-	//time_to_sec(&times,5000,&dest_time);
+	time_to_sec(&times,5000,&dest_time);
 	
 }
 /* USER CODE END 4 */
