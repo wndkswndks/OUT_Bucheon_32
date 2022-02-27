@@ -76,6 +76,7 @@ uint8_t b_w_step = STEP1;
   * @brief  The application entry point.
   * @retval int
   */
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -106,6 +107,7 @@ int main(void)
   HAL_Delay(100);
   HAL_RTCEx_SetSmoothCalib(&hrtc,0,0,0x036); //40
 
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -115,6 +117,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
 
     if(RTC->TR != tr)
 	{

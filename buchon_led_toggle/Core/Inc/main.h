@@ -75,14 +75,24 @@ typedef struct
 
 
 
-#define RED_ON_TIME     46800
-#define RED_OFF_TIME    39600
-#define GREEN_ON_TIME   600
-#define GREEN_OFF_TIME  3000
-#define BLUE_ON_TIME    60
-#define BLUE_OFF_TIME   7140
-#define WHITE_ON_TIME   600
-#define WHITE_OFF_TIME  3000
+#define RED_ON_TIME     46800/2
+#define RED_OFF_TIME    39600/2
+#define GREEN_ON_TIME   600/2
+#define GREEN_OFF_TIME  3000/2
+#define BLUE_ON_TIME    60/2
+#define BLUE_OFF_TIME   7140/2
+#define WHITE_ON_TIME   600/2
+#define WHITE_OFF_TIME  3000/2
+
+//#define RED_ON_TIME     100
+//#define RED_OFF_TIME    100
+//#define GREEN_ON_TIME   30
+//#define GREEN_OFF_TIME  30
+//#define BLUE_ON_TIME    4
+//#define BLUE_OFF_TIME   4
+//#define WHITE_ON_TIME   5
+//#define WHITE_OFF_TIME  5
+
 
 //#define RED_ON_TIME     100
 //#define RED_OFF_TIME    100
@@ -113,10 +123,13 @@ typedef struct
 //#define BLUE_OFF_TIME  	2
 //#define WHITE_ON_TIME   2
 //#define WHITE_OFF_TIME  2
+<<<<<<< HEAD
+
+=======
+>>>>>>> f4e09cc98a7228e695e27671e58f06655854d57e
 
 
-
-#define TEMP_TH         33.0 // 기�? ?��?��
+#define TEMP_TH         30.0 // 기�? ?��?��
 
 #define RED_ON		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
 #define GREEN_ON	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
