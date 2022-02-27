@@ -105,7 +105,7 @@ int main(void)
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   HAL_Delay(100);
-  HAL_RTCEx_SetSmoothCalib(&hrtc,0,0,0x036); //40
+  HAL_RTCEx_SetSmoothCalib(&hrtc,0,0,0x036); //54
 
 
   /* USER CODE END 2 */
@@ -423,11 +423,8 @@ uint32_t Get_Now_RTC_time()
 {
 	uint32_t time = 0;
 
-	//time = HAL_GetTick();
 	time = tr_cnt;
-
 	return time;
-	//return (RTC->CNTH<< 16 | RTC->CNTL);
 }
 RTC_TimeTypeDef times;
 
