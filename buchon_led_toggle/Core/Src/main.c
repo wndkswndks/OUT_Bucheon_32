@@ -77,7 +77,7 @@ uint8_t b_w_step = STEP1;
   * @retval int
   */
 
-int main(void)////
+int main(void)////----
 {
   /* USER CODE BEGIN 1 */
 
